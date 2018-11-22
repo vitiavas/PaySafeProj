@@ -25,6 +25,7 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 
 public class CryptoUtil {
 		
@@ -51,21 +52,21 @@ public class CryptoUtil {
 			return plainBytes;
 		}
 
-		public static byte[] symCipher(byte[] plainBytes, SecretKey key) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+		public static byte[] symCipher(byte[] plainBytes, byte[] IV, SecretKey key) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
 			Cipher cipher = Cipher.getInstance(SYM_CIPHER);
-			cipher.init(Cipher.ENCRYPT_MODE, key);
+			cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(IV));
 			byte[] bytes = cipher.doFinal(plainBytes);
 			return bytes;
 		}
-		public static byte[] symDecipher(byte[] cipherBytes, SecretKey key) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+		public static byte[] symDecipher(byte[] cipherBytes, byte[] IV, SecretKey key) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
 			Cipher cipher = Cipher.getInstance(SYM_CIPHER);
-			cipher.init(Cipher.DECRYPT_MODE, key);
+			cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(IV));
 			byte[] bytes = cipher.doFinal(cipherBytes);
 			return bytes;
 		}
 		
 		
-		static boolean verifyDigitalSignature(byte[] cipherDigest, byte[] bytes, PublicKey publicKey) throws NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException{
+		public static boolean verifyDigitalSignature(byte[] cipherDigest, byte[] bytes, PublicKey publicKey) throws NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException{
 
 			// verify the signature with the public key
 			Signature ecdsaVerify = Signature.getInstance(SIGNATURE_ALGO,PROVIDER);
@@ -81,7 +82,7 @@ public class CryptoUtil {
 		
 		/** Calculates digital signature from text. 
 		 * @throws NoSuchProviderException */
-		static byte[] makeDigitalSignature(byte[] bytes, PrivateKey privatekey) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, NoSuchProviderException {
+		public static byte[] makeDigitalSignature(byte[] bytes, PrivateKey privatekey) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, NoSuchProviderException {
 
 			// get a signature object and sign the plain text with the private key
 			Signature ecdsaSign = Signature.getInstance(SIGNATURE_ALGO, PROVIDER);

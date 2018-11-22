@@ -1,7 +1,6 @@
 package Crypto;
 
 import java.io.Serializable;
-import java.security.PublicKey;
 
 
 public class Message implements Serializable{
@@ -15,11 +14,6 @@ public class Message implements Serializable{
     private int sender;
     private int destination;
     private int timeStamp;
-    private PublicKey senderK;
-    
-    public Message(PublicKey sender) {
-        this.senderK = sender;
-    }
     
     public Message(int sender, int receiver, double amount, int timeStamp) {
         this.sender = sender;
@@ -38,16 +32,6 @@ public class Message implements Serializable{
 
     public int getDestination() {
 		return destination;
-    }
-    
-    public PublicKey getSenderK() {
-    	return senderK;
-    }
-
-
-    @Override
-    public String toString() {
-        return amount + " from " + sender;
     }
 
     public int getTimestamp() {

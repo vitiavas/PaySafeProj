@@ -11,6 +11,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -23,6 +24,7 @@ public class CryptoManager {
     private PublicKey pubKey;
     private PrivateKey privKey;
 
+    public CryptoManager() {}
     public CryptoManager(PublicKey publicKey, PrivateKey privateKey){
         
     	this.pubKey=publicKey;
@@ -40,9 +42,10 @@ public class CryptoManager {
             ecdhU.init(privKey);
             ecdhU.doPhase(receiverPubKey,true);
             SecretKey aesKey = ecdhU.generateSecret("AES");
+            byte[] iv = generateIV();
 
             //AES ciphering of Message
-            byte[] cipheredContent = cipherContent(message, aesKey);
+            byte[] cipheredContent = cipherContent(message, iv,aesKey);
 
             //Signature generation
             byte[] digitalSig;
@@ -54,7 +57,7 @@ public class CryptoManager {
             byte[] integrityCheckBytes = toBytes(integrityCheck);
 
             //AES ciphering of Signature and params
-            byte[] cipheredIntegrityCheck = CryptoUtil.symCipher(integrityCheckBytes, aesKey);
+            byte[] cipheredIntegrityCheck = CryptoUtil.symCipher(integrityCheckBytes,iv, aesKey);
             cipheredMessage = new CipheredMessage(cipheredContent, cipheredIntegrityCheck);
         } catch (NoSuchAlgorithmException | IOException | InvalidKeyException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException e) {
             e.printStackTrace();
@@ -66,7 +69,7 @@ public class CryptoManager {
         return cipheredMessage;
     }
 
-    public Message decipherCipheredMessage(CipheredMessage cipheredMessage, SecretKey key,PublicKey senderK) throws NoSuchProviderException{
+    /*public Message decipherCipheredMessage(CipheredMessage cipheredMessage, SecretKey key,PublicKey senderK) throws NoSuchProviderException{
         Message deciphMsg = null;
         try {
             byte[] decipheredContent = CryptoUtil.symDecipher(cipheredMessage.getContent(), key);
@@ -80,16 +83,16 @@ public class CryptoManager {
             System.out.println("Decipher error...");
         }
         return deciphMsg;
-    }
+    }*/
    
     public boolean verifyIntegrity(Message msg, IntegrityCheck check, PublicKey key) throws IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException, IOException, ClassNotFoundException, InvalidAlgorithmParameterException, NoSuchProviderException {
        return CryptoUtil.verifyDigitalSignature(check.getDigitalSignature(), toBytes(msg), key);
     }
 
-    private byte[] cipherContent(Message message, SecretKey skey){
+    private byte[] cipherContent(Message message, byte[] iv, SecretKey skey){
         byte[] cipheredMessage = new byte[0];
         try {
-            cipheredMessage = CryptoUtil.symCipher(toBytes(message), skey);
+            cipheredMessage = CryptoUtil.symCipher(toBytes(message), iv, skey);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException | InvalidKeyException | IOException | IllegalBlockSizeException | BadPaddingException e) {
             e.printStackTrace();
         }
@@ -116,5 +119,12 @@ public class CryptoManager {
     public PrivateKey getPrivateKey() {
     	return privKey;
     }
+    private byte[] generateIV(){
+        SecureRandom random = new SecureRandom();
+        byte[] initializationVector = new byte[128/8];
+        random.nextBytes(initializationVector);
+        return initializationVector;
+    }
+
     
 }
