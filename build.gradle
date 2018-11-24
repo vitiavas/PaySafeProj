@@ -31,6 +31,8 @@ dependencies {
     // end::actuator[]
 	compile("org.springframework.boot:spring-boot-starter-websocket")
 	compile("com.twilio.sdk:twilio:7.1.0")
+	compile("org.bouncycastle:bcprov-jdk15on:1.47")
+	compile("org.bouncycastle:bcmail-jdk15on:1.47")
     testCompile "junit:junit:4.12"
 }
 
