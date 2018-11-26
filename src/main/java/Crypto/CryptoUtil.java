@@ -101,8 +101,8 @@ public class CryptoUtil {
 			Signature ecdsaVerify = Signature.getInstance(SIGNATURE_ALGO, BOUNCY_CASTLE_PROVIDER);
 			ecdsaVerify.initVerify(publicKey);
 			try {
-				ecdsaVerify.update(data);
-				return ecdsaVerify.verify(signature);
+				ecdsaVerify.update(signature);
+				return ecdsaVerify.verify(data);
 			} catch (SignatureException se) {
 				System.err.println("Caught exception while verifying " + se);
 				return false;
