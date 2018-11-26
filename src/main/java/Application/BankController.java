@@ -51,6 +51,7 @@ public class BankController {
     	keystore.load(new FileInputStream("Baeldung.p12"), keystorePassword);
     	PrivateKey privateKey = CryptoUtil.getPrivateKeyFromKeyStore("baeldung", keyPassword, keystore);	
     	
+    	
     	byte[] signature = CryptoUtil.decryptDataWithPrivateKey(encryptedData, privateKey);
     	// AQUI fico com a signature e não consigo obter o plaintext para depois verificar assinatura digital ????
     	String decryptedMessage = new String(signature);

@@ -50,13 +50,14 @@ public class PaySafeController {
     	
     	Security.addProvider(new BouncyCastleProvider());
     	X509Certificate certificate = CryptoUtil.getCertificate();
-    	      	 
+
+    	
     	String secretMessage = senderNumber + " " + receiverNumber + " " + amount;
     	System.out.println("Original Message : " + secretMessage);
     	byte[] stringToEncrypt = secretMessage.getBytes();
     	
+    	
 		KeyPair pair = CryptoUtil.GenerateKeys();
-		
 		PrivateKey privateKey = pair.getPrivate();
 	
     	byte[] dataWithDigitalSignature = CryptoUtil.makeDigitalSignature(stringToEncrypt, privateKey);
