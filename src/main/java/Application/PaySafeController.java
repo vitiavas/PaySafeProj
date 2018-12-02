@@ -44,6 +44,8 @@ public class PaySafeController {
 			@RequestParam(value = "receiverNumber") String receiverNumber,
 			@RequestParam(value = "amount") String amount) throws CertificateException, NoSuchProviderException, KeyStoreException, NoSuchAlgorithmException, IOException, UnrecoverableKeyException, CMSException, OperatorCreationException, InvalidKeyException, SignatureException, InvalidAlgorithmParameterException {
     	
+    	
+        
     	// MAXIMIZE Key Size if necessary
     	int maxKeySize = javax.crypto.Cipher.getMaxAllowedKeyLength("AES");
     	System.out.println("Max Key Size for AES : " + maxKeySize);
@@ -68,8 +70,7 @@ public class PaySafeController {
     	PublicKey publicKey = pair.getPublic();
     	BankController bank = BankController.getInstance();
     	bank.processMessage(encryptedData, publicKey);
-    	 
-    	
+    	 	
     }
     
     
@@ -102,6 +103,5 @@ public class PaySafeController {
         rd.close();
     }
     
-
-    
+       
 }
