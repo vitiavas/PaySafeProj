@@ -18,10 +18,13 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class BankServer extends Thread{
     private DatagramSocket socket;
     private boolean running;
     private byte[] buf = new byte[256];
+    private static final String CHECK_BALANCE = "Check Balance ";
 	/**
 	 Main function start the bank server on port 6666
 	 */
@@ -35,7 +38,12 @@ public class BankServer extends Thread{
     public BankServer() throws SocketException {
         socket = new DatagramSocket(6666);
     }
- 
+    
+    public static void checkBalance(int number) {
+    	// BALANCE CHECKING PROCESS
+    }
+    
+    
     public void run() {
         running = true;
  
@@ -47,13 +55,18 @@ public class BankServer extends Thread{
 	            int port = packet.getPort();
 	            packet = new DatagramPacket(buf, buf.length, address, port);
 	            String received  = new String(packet.getData(), 0, packet.getLength());
+	            
 	            if (received.equals("end")) {
 	                running = false;
 	                continue;
+	                
+	            } else if(received.contains(CHECK_BALANCE)){
+	            	String number = null;
+	            	StringUtils.substringAfter(number, CHECK_BALANCE);
+	            	checkBalance(Integer.valueOf(number));
 	            }
 	            socket.send(packet);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
         }

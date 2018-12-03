@@ -21,8 +21,7 @@ public class PaySafeClient {
  
     public String sendMessageUDP(String msg) throws IOException {
         buf = msg.getBytes();
-        DatagramPacket packet 
-          = new DatagramPacket(buf, buf.length, address, 6666);
+        DatagramPacket packet = new DatagramPacket(buf, buf.length, address, 6666);
         socket.send(packet);
         packet = new DatagramPacket(buf, buf.length);
         socket.receive(packet);
