@@ -50,27 +50,29 @@ public class app {
         return is.readObject();
     }
 	public static void main(String[] args) throws IOException, UnrecoverableKeyException, KeyStoreException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, NoSuchProviderException, CertificateException, NoSuchPaddingException, InvalidAlgorithmParameterException, BadPaddingException, IllegalBlockSizeException, ClassNotFoundException {
-		String m = "910984085 964089137 22232.22 1334";
+		String m = "964089137 22232.22 1334";
 		Security.addProvider(new BouncyCastleProvider());
 		byte[] iv = generateIV();
 		CryptoManager mn = new CryptoManager();
 		byte[] b = toBytes(m);
 		System.out.println("WWWW   " + b.length+Thread.currentThread().getContextClassLoader().getResourceAsStream("keys.jks"));
 		String s = "123456";
-		String s2 = "keys.jks";
-		String s3 = "keystore";
+		String s2 = "server/server.jks";
+		String s3 = "server";
+		String s4 = "clients/alice.jks";
 		
-		PrivateKey k = CryptoUtil.getPrivateKeyFromKeyStoreResource(s2, s3.toCharArray(), "server", s.toCharArray());
+		PrivateKey k = CryptoUtil.getPrivateKeyFromKeyStoreResource(s2, s.toCharArray(), "server", s.toCharArray());
 		if(k==null)
 			System.out.println("shiiit");
 		byte[] sig = CryptoUtil.makeDigitalSignature(b, k);
 		System.out.println("WWWW   " + sig.length);
-		Certificate c = CryptoUtil.getX509CertificateFromResource("server.cer");
+		Certificate c = CryptoUtil.getX509CertificateFromResource("clients/server.cer");
 		PublicKey k2 = c.getPublicKey();
 		System.out.println(CryptoUtil.verifyDigitalSignature(sig, b, k2));
 		
-		PrivateKey k3 = CryptoUtil.getPrivateKeyFromKeyStoreResource(s2, s3.toCharArray(), "alice", s.toCharArray());
-		Certificate c2 = CryptoUtil.getX509CertificateFromResource("alice.cer");
+		
+		PrivateKey k3 = CryptoUtil.getPrivateKeyFromKeyStoreResource(s4, s.toCharArray(), "alice", s.toCharArray());
+		Certificate c2 = CryptoUtil.getX509CertificateFromResource("server/alice.cer");
 		
 		KeyAgreement ecdhU = KeyAgreement.getInstance("ECDH", "BC");
 	    ecdhU.init(k);

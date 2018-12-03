@@ -9,6 +9,10 @@ import java.net.UnknownHostException;
 
 public class PaySafeClient {
 
+	private static final int ALICE_NUMBER = 910984085;
+    private static final int SERVER_NUMBER = 964089137;
+    private static final int CHARLIE_NUMBER = 913330533;
+    private static final int BOB_NUMBER = 964512431;
     private DatagramSocket socket;
     private InetAddress address;
  
@@ -20,9 +24,11 @@ public class PaySafeClient {
     }
  
     public String sendMessageUDP(String msg) throws IOException {
+    	
         buf = msg.getBytes();
         DatagramPacket packet = new DatagramPacket(buf, buf.length, address, 6666);
         socket.send(packet);
+        
         packet = new DatagramPacket(buf, buf.length);
         socket.receive(packet);
         String received = new String(packet.getData(), 0, packet.getLength());
