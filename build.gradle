@@ -25,12 +25,7 @@ targetCompatibility = 1.8
 
 dependencies {
     compile "joda-time:joda-time:2.2"
-    compile("org.springframework.boot:spring-boot-starter-web")
-        // tag::actuator[]
-    compile("org.springframework.boot:spring-boot-starter-actuator")
-    // end::actuator[]
-	compile("org.springframework.boot:spring-boot-starter-websocket")
-	compile("com.twilio.sdk:twilio:7.1.0")
+
 	compile("org.bouncycastle:bcprov-jdk15on:1.60")
 	compile("org.bouncycastle:bcmail-jdk15on:1.60")
 	compile("org.apache.commons:commons-lang3:3.0")
