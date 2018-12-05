@@ -47,6 +47,7 @@ public class BankServer extends Thread{
     
     private HashMap<Integer, PublicKey> clients;
     private HashMap<Integer, Double> accounts;
+    private HashMap<Integer, Long> timestamps;
     
 	/**
 	 Main function start the bank server on port 6666
@@ -81,6 +82,13 @@ public class BankServer extends Thread{
         accounts.put(ALICE_NUMBER, 100.00);
         accounts.put(BOB_NUMBER, 100.00);
         accounts.put(CHARLIE_NUMBER, 100.00);
+        
+        timestamps = new HashMap<Integer,Long>();
+        
+        timestamps.put(ALICE_NUMBER, (long) 0);
+        timestamps.put(BOB_NUMBER, (long) 0);
+        timestamps.put(CHARLIE_NUMBER, (long) 0);
+        
         
     }
     
@@ -120,12 +128,22 @@ public class BankServer extends Thread{
 					int receiver = Integer.parseInt(fields[1]);
 					double amount = Double.parseDouble(fields[2]);
 					int timestamp = Integer.parseInt(fields[3]);
-					//verify here timestamp
-					
-					if(transfer(number,receiver , amount)) {
-						String content = "Successfull";
-						sendData = cm.makeCipheredMessage(content, clients.get(number));
+					if((timestamp - timestamps.get(numberReceived)) == 1) {
+						if(transfer(number,receiver , amount)) {
+							String content = "Successfull";
+							sendData = cm.makeCipheredMessage(content, clients.get(number));
+						}
+						else {
+							String content = "Aborted";
+							sendData = cm.makeCipheredMessage(content, clients.get(number));
+						}
 					}
+					else {
+						String content = "Aborted";
+						sendData = cm.makeCipheredMessage(content, clients.get(number));
+					}	
+					
+					
 						
 					break;
 				case "charge":

@@ -46,15 +46,16 @@ public class CryptoManager {
             byte[] sK = ecdhU.generateSecret();
             SecretKey aesKey = new SecretKeySpec(sK, 0, sK.length, "AES");
             byte[] iv = generateIV();
-
+            System.out.println(new String(iv));
             //AES ciphering of Message
             byte[] cipheredContent = cipherContent(message, iv,aesKey);
-
+            System.out.println(cipheredContent.length);
             //Signature generation
             byte[] digitalSig = CryptoUtil.makeDigitalSignature(message.getBytes(), privKey);
-
+            
             //AES ciphering of Signature and params
             byte[] cipheredSignature = CryptoUtil.symCipher(digitalSig,iv, aesKey);
+            System.out.println(cipheredSignature.length);
             
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             baos.write(number.getBytes());
@@ -83,12 +84,13 @@ public class CryptoManager {
             SecretKey aesKey = new SecretKeySpec(sK, 0, sK.length, "AES");
         	
             int length = cipheredMessage.length;
-            int ivLength = length - 17;
-            int sigLength = ivLength-54;
+            int ivLength = length - 16;
+            int sigLength = ivLength-64;
             
             byte[] iv = Arrays.copyOfRange(cipheredMessage, ivLength, length);
+            System.out.println(new String(iv));
             byte[] sig = Arrays.copyOfRange(cipheredMessage, sigLength, ivLength);
-            byte[] cipheredContent = Arrays.copyOfRange(cipheredMessage, 9, sigLength);
+            byte[] cipheredContent = Arrays.copyOfRange(cipheredMessage, 0, sigLength);
         	
         	
             decipheredContent = CryptoUtil.symDecipher(cipheredContent, iv, aesKey);            
