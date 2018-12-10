@@ -62,7 +62,6 @@ public class Application {
 				int receiverNumber = reader.nextInt(); 
 				System.out.println("Introduce amount to send: ");
 				double amount = reader.nextDouble(); 
-				// CONVERT TO A MESSAGE HERE AND DO ALL THE ENCRYPTION PROCESS
 				client.sendMessageUDP("pay " + receiverNumber + " "+ amount, "pay");
 			} else if(n == 2) {
 				System.out.println("Introduce your number: ");

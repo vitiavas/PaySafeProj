@@ -56,7 +56,10 @@ public class BankServer extends Thread{
 	 * @throws IOException 
 	 * @throws CertificateException 
 	 */
-
+	public static void main(String[] args) throws IOException, UnrecoverableKeyException, KeyStoreException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, NoSuchProviderException, CertificateException, NoSuchPaddingException, InvalidAlgorithmParameterException, BadPaddingException, IllegalBlockSizeException, ClassNotFoundException {
+		BankServer bank = new BankServer();
+		bank.start();
+	}
     public BankServer() throws UnrecoverableKeyException, KeyStoreException, CertificateException, IOException {
         socket = new DatagramSocket(6666);
         
