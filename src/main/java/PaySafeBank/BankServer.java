@@ -45,21 +45,17 @@ public class BankServer extends Thread{
     private static final int CHARLIE_NUMBER = 913330533;
     private static final int BOB_NUMBER = 964512431;
     
-    private HashMap<Integer, PublicKey> clients;
+    public HashMap<Integer, PublicKey> clients;
     private HashMap<Integer, Double> accounts;
     private HashMap<Integer, Long> timestamps;
     
-	/**
-	 Main function start the bank server on port 6666
-	 * @throws KeyStoreException 
-	 * @throws UnrecoverableKeyException 
-	 * @throws IOException 
-	 * @throws CertificateException 
-	 */
-	public static void main(String[] args) throws IOException, UnrecoverableKeyException, KeyStoreException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, NoSuchProviderException, CertificateException, NoSuchPaddingException, InvalidAlgorithmParameterException, BadPaddingException, IllegalBlockSizeException, ClassNotFoundException {
-		BankServer bank = new BankServer();
-		bank.start();
-	}
+
+    
+    
+    public PublicKey getClientPublicKey(int number) {
+    	return clients.get(number);
+    }
+    
     public BankServer() throws UnrecoverableKeyException, KeyStoreException, CertificateException, IOException {
         socket = new DatagramSocket(6666);
         
@@ -107,18 +103,18 @@ public class BankServer extends Thread{
     
     public void run() {
         running = true;
- 
+
         while (running) {
             DatagramPacket packet = new DatagramPacket(buf, buf.length);
             try {
             	System.out.println("Receiving packet...");
 				socket.receive(packet);
+				byte[] messageInBytes = Arrays.copyOfRange(packet.getData(), 0, packet.getLength());
 				
-				byte[] message = packet.getData();
-				String numberReceived = new String(Arrays.copyOfRange(message, 0, 9));
-				byte[] cipheredMessage = Arrays.copyOfRange(message, 9, message.length);
-				int number = Integer.parseInt(numberReceived);
-				
+				byte[] numberReceived = Arrays.copyOfRange(messageInBytes, 0, 9);
+				byte[] cipheredMessage = Arrays.copyOfRange(messageInBytes, 9, messageInBytes.length);
+				String numberReceivedString = new String(numberReceived);
+				int number = Integer.parseInt(numberReceivedString);
 				byte[] decipheredMessage = cm.decipherCipheredMessage(cipheredMessage, clients.get(number));
 				String received = new String(decipheredMessage);
 				String[] fields = received.split(" ");
@@ -131,7 +127,7 @@ public class BankServer extends Thread{
 					int receiver = Integer.parseInt(fields[1]);
 					double amount = Double.parseDouble(fields[2]);
 					int timestamp = Integer.parseInt(fields[3]);
-					if((timestamp - timestamps.get(numberReceived)) == 1) {
+					if((timestamp - timestamps.get(number)) == 1) {
 						if(transfer(number,receiver , amount)) {
 							String content = "Successfull";
 							sendData = cm.makeCipheredMessage(content, clients.get(number));

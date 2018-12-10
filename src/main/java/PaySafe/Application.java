@@ -34,13 +34,13 @@ public class Application {
 		int init =0;
 		while(init ==0) {
 			switch (userNumer.trim()) {
-	        case "1":  client=new PaySafeClient("Alice");
+	        case "1":  client=new PaySafeClient("alice");
 	        		 init=1;
 	                 break;
-	        case "2":  client=new PaySafeClient("Bob");
+	        case "2":  client=new PaySafeClient("bob");
 	        		 init=1;
 	        		 break;
-	        case "3":  client=new PaySafeClient("Charlie");
+	        case "3":  client=new PaySafeClient("charlie");
 	        		 init=1;
 	        		 break;
 	        default: System.out.println("\nThe '"+userNumer+ "' is not a valid number!");
@@ -61,14 +61,14 @@ public class Application {
 				System.out.println("Introduce the receivers number: ");
 				int receiverNumber = reader.nextInt(); 
 				System.out.println("Introduce amount to send: ");
-				double amount = reader.nextDouble(); 
-				client.sendMessageUDP("pay " + receiverNumber + " "+ amount, "pay");
+				double amount = reader.nextDouble(); 				
+				client.sendMessageUDP(receiverNumber, amount, "pay");
 			} else if(n == 2) {
-				System.out.println("Introduce your number: ");
-				int myNumber = reader.nextInt();
-				String message = "Check Balance " + Integer.toString(myNumber);
-				// CONVERT TO A MESSAGE HERE AND DO ALL THE ENCRYPTION PROCESS
-				client.sendMessageUDP(message,"check");
+//				System.out.println("Introduce your number: ");
+//				int myNumber = reader.nextInt();
+//				String message = "Check Balance " + Integer.toString(myNumber);
+//				// CONVERT TO A MESSAGE HERE AND DO ALL THE ENCRYPTION PROCESS
+//				client.sendMessageUDP(message,"check");
 	
 			} else if(n == 3) {
 				

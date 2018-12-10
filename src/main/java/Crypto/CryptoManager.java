@@ -9,6 +9,7 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.Security;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -17,6 +18,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.Arrays;
 
 public class CryptoManager {
@@ -39,7 +41,8 @@ public class CryptoManager {
     	byte[] finalMessage = null ;
         try {
         	
-        	
+    		Security.addProvider(new BouncyCastleProvider());
+
         	KeyAgreement ecdhU = KeyAgreement.getInstance("ECDH", "BC");
             ecdhU.init(privKey);
             ecdhU.doPhase(receiverPubKey,true);
@@ -76,14 +79,15 @@ public class CryptoManager {
     public byte[] decipherCipheredMessage(byte[] cipheredMessage, PublicKey senderK) throws NoSuchProviderException{
     	byte[] decipheredContent = null;
         try {
-        	
+    		Security.addProvider(new BouncyCastleProvider());
+
         	KeyAgreement ecdhU = KeyAgreement.getInstance("ECDH", "BC");
             ecdhU.init(privKey);
             ecdhU.doPhase(senderK,true);
             byte[] sK = ecdhU.generateSecret();
             SecretKey aesKey = new SecretKeySpec(sK, 0, sK.length, "AES");
         	
-            int length = cipheredMessage.length;
+            int length = cipheredMessage.length; //111
             int ivLength = length - 16;
             int sigLength = ivLength-64;
             
@@ -100,7 +104,9 @@ public class CryptoManager {
             else throw new IllegalStateException("Invalid Signature");
         } catch (ClassNotFoundException | IOException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
             e.printStackTrace();
-            System.out.println("Decipher error...");
+            if(e.getLocalizedMessage().equals("Given final block not properly padded")) {
+                System.out.println("Wrong Password!");
+            }
         }
         return decipheredContent;
     }
