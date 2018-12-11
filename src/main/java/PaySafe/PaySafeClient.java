@@ -5,54 +5,50 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.security.KeyStoreException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 
+import org.bouncycastle.util.Arrays;
+
+import Crypto.Constants;
 import Crypto.CryptoManager;
 import Crypto.CryptoUtil;
 import PaySafeBank.BankServer;
 
 public class PaySafeClient {
 
-    private static final String KEYSTORE = "clients/";
-    private static final String PASSWORD = "123456";
-	
 	private static final String ALICE_NUMBER = "910984085";
-    private static final String SERVER_NUMBER = "964089137";
     private static final String CHARLIE_NUMBER = "913330533";
     private static final String BOB_NUMBER = "964512431";
-    private static final String CER = "clients/";
     private Certificate serverCer;
     private DatagramSocket socket;
     private InetAddress address;
     private long readID =0;
     private long writeTimestamp = -1;
-    private String name;
     private CryptoManager cm;
-    private BankServer bankServer;
-    private byte[] buf = new byte[140];
  
     public PaySafeClient(String name) throws UnrecoverableKeyException, KeyStoreException, CertificateException, IOException {
     	
-    	PrivateKey privateKey = CryptoUtil.getPrivateKeyFromKeyStoreResource(KEYSTORE+name+".jks", PASSWORD.toCharArray(), name, PASSWORD.toCharArray());
-    	Certificate c = CryptoUtil.getX509CertificateFromResource(CER+ name + ".cer");
-    	if(name.equals("alice"))
-    		cm = new CryptoManager(c.getPublicKey(), privateKey,ALICE_NUMBER);
-    	else if (name.equals("bob"))
-    		cm = new CryptoManager(c.getPublicKey(), privateKey,BOB_NUMBER);
+    	PrivateKey privateKey = CryptoUtil.getPrivateKeyFromKeyStoreResource(Constants.KEYSTORE_CLIENTS + name + ".jks", 
+    			Constants.PASSWORD.toCharArray(), name, Constants.PASSWORD.toCharArray());
+    	Certificate c = CryptoUtil.getX509CertificateFromResource(Constants.CLIENTS_FOLDER + name + ".cer");
+    	if(name.equals(Constants.ALICE))
+    		cm = new CryptoManager(c.getPublicKey(), privateKey, ALICE_NUMBER);
+    	else if (name.equals(Constants.BOB))
+    		cm = new CryptoManager(c.getPublicKey(), privateKey, BOB_NUMBER);
     	else
-    		cm = new CryptoManager(c.getPublicKey(), privateKey,CHARLIE_NUMBER);
+    		cm = new CryptoManager(c.getPublicKey(), privateKey, CHARLIE_NUMBER);
         socket = new DatagramSocket();
-        address = InetAddress.getByName("localhost");
-        serverCer = CryptoUtil.getX509CertificateFromResource(CER+ "server.cer");
+        address = InetAddress.getByName(Constants.LOCALHOST);
+        serverCer = CryptoUtil.getX509CertificateFromResource(Constants.CLIENTS_FOLDER + Constants.SERVER_CERTIFICATE);
     }
  
-    public String sendMessageUDP(int receiverNumber, double amount, String r) throws IOException, CertificateException {
-    	String msg = r + " " +receiverNumber + " " + amount + " ";
-    	if(r.equals("pay") || r.equals("check")) {
+    public String sendMessageUDP(int receiverNumber, double amount, String operation) throws IOException, CertificateException, NoSuchProviderException {
+    	String msg = operation + " " + receiverNumber + " " + amount + " ";
+    	if(operation.equals(Constants.PAY_OPERATION) || operation.equals(Constants.CHECK_BALANCE_OPERATION)) {
     		writeTimestamp++;
     		msg += writeTimestamp;
 		}
@@ -60,7 +56,7 @@ public class PaySafeClient {
     		readID++;
     		msg += readID;
     	}
-
+    	System.out.println("ecnrypting message: " + msg);
     	
         byte[] buf = cm.makeCipheredMessage(msg, serverCer.getPublicKey());
         DatagramPacket packet = new DatagramPacket(buf, buf.length, address, 6666);
@@ -68,7 +64,8 @@ public class PaySafeClient {
         
         packet = new DatagramPacket(buf, buf.length);
         socket.receive(packet);
-        String received = new String(packet.getData(), 0, packet.getLength());
+		System.out.println("Received response!");
+		String received = new String(buf);
         return received;
     }
  

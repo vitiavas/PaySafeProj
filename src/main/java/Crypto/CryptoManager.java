@@ -43,11 +43,12 @@ public class CryptoManager {
         	
     		Security.addProvider(new BouncyCastleProvider());
 
-        	KeyAgreement ecdhU = KeyAgreement.getInstance("ECDH", "BC");
+        	KeyAgreement ecdhU = KeyAgreement.getInstance(Constants.ELIPTIC_CURVE_DIFFIE_HELLMAN, 
+        														Constants.BOUNCY_CASTLE);
             ecdhU.init(privKey);
             ecdhU.doPhase(receiverPubKey,true);
             byte[] sK = ecdhU.generateSecret();
-            SecretKey aesKey = new SecretKeySpec(sK, 0, sK.length, "AES");
+            SecretKey aesKey = new SecretKeySpec(sK, 0, sK.length, Constants.AES_ALGORITHM);
             byte[] iv = generateIV();
             System.out.println(new String(iv));
             //AES ciphering of Message
@@ -81,11 +82,12 @@ public class CryptoManager {
         try {
     		Security.addProvider(new BouncyCastleProvider());
 
-        	KeyAgreement ecdhU = KeyAgreement.getInstance("ECDH", "BC");
+        	KeyAgreement ecdhU = KeyAgreement.getInstance(Constants.ELIPTIC_CURVE_DIFFIE_HELLMAN, 
+        															Constants.BOUNCY_CASTLE);
             ecdhU.init(privKey);
             ecdhU.doPhase(senderK,true);
             byte[] sK = ecdhU.generateSecret();
-            SecretKey aesKey = new SecretKeySpec(sK, 0, sK.length, "AES");
+            SecretKey aesKey = new SecretKeySpec(sK, 0, sK.length, Constants.AES_ALGORITHM);
         	
             int length = cipheredMessage.length; //111
             int ivLength = length - 16;

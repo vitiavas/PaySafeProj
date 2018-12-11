@@ -3,11 +3,9 @@ package PaySafeBank;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.SocketException;
 import java.security.KeyStoreException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.util.Scanner;
 
 public class Application {
 	
@@ -24,7 +22,6 @@ public class Application {
 		    	break;
 	    }
 	    
-	    server.stop();
 	    
     }
     

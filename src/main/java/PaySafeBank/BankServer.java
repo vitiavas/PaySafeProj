@@ -1,31 +1,21 @@
 package PaySafeBank;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.HashMap;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-
-import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.util.Arrays;
 
+import Crypto.Constants;
 import Crypto.CryptoManager;
 import Crypto.CryptoUtil;
 
@@ -35,59 +25,67 @@ public class BankServer extends Thread{
     private byte[] buf = new byte[140];
     private CryptoManager cm;
     
-    private static final String KEYSTORE = "server/server.jks";
-    private static final String PASSWORD = "123456";
-    private static final String ALIAS = "server";
-    private static final String CER = "server/";
-    
-    private static final int ALICE_NUMBER = 910984085;
-    private static final String SERVER_NUMBER = "964089137";
-    private static final int CHARLIE_NUMBER = 913330533;
-    private static final int BOB_NUMBER = 964512431;
-    
     public HashMap<Integer, PublicKey> clients;
     private HashMap<Integer, Double> accounts;
     private HashMap<Integer, Long> timestamps;
+    private HashMap<Integer, String> phoneNumbers;
     
 
-    
-    
     public PublicKey getClientPublicKey(int number) {
     	return clients.get(number);
     }
     
-    public BankServer() throws UnrecoverableKeyException, KeyStoreException, CertificateException, IOException {
-        socket = new DatagramSocket(6666);
-        
-        PrivateKey privateKey = CryptoUtil.getPrivateKeyFromKeyStoreResource(KEYSTORE, PASSWORD.toCharArray(), ALIAS, PASSWORD.toCharArray());
-        Certificate c = CryptoUtil.getX509CertificateFromResource(CER+"server.cer");
-        cm = new CryptoManager(c.getPublicKey(), privateKey, SERVER_NUMBER);
+    public void initExistentClientsData(PrivateKey privateKey, Certificate certificate) throws CertificateException, IOException {
+    	cm = new CryptoManager(certificate.getPublicKey(), privateKey, Constants.SERVER_NUMBER);
         
         //filling clients
         clients = new HashMap<Integer, PublicKey>();
+        System.out.println("Starting clients certificates and accounts...");
+        certificate = CryptoUtil.getX509CertificateFromResource(Constants.SERVER_FOLDER + Constants.ALICE_CERTIFICATE);
+        clients.put(Constants.ALICE_NUMBER, certificate.getPublicKey());
         
-        c = CryptoUtil.getX509CertificateFromResource(CER+"alice.cer");
-        clients.put(ALICE_NUMBER, c.getPublicKey());
+        certificate = CryptoUtil.getX509CertificateFromResource(Constants.SERVER_FOLDER + Constants.BOB_CERTIFICATE);
+        clients.put(Constants.BOB_NUMBER, certificate.getPublicKey());
         
-        c = CryptoUtil.getX509CertificateFromResource(CER+"bob.cer");
-        clients.put(BOB_NUMBER, c.getPublicKey());
-        
-        c = CryptoUtil.getX509CertificateFromResource(CER+"charlie.cer");
-        clients.put(CHARLIE_NUMBER, c.getPublicKey());
+        certificate = CryptoUtil.getX509CertificateFromResource(Constants.SERVER_FOLDER + Constants.CHARLIE_CERTIFICATE);
+        clients.put(Constants.CHARLIE_NUMBER, certificate.getPublicKey());
         
         //filling accounts
         accounts = new HashMap<Integer,Double>();
         
-        accounts.put(ALICE_NUMBER, 100.00);
-        accounts.put(BOB_NUMBER, 100.00);
-        accounts.put(CHARLIE_NUMBER, 100.00);
+        accounts.put(Constants.ALICE_NUMBER, 100.00);
+        accounts.put(Constants.BOB_NUMBER, 100.00);
+        accounts.put(Constants.CHARLIE_NUMBER, 100.00);
+        
+        phoneNumbers = new HashMap<Integer, String>();
+
+        phoneNumbers.put(Constants.ALICE_NUMBER, Constants.ALICE);
+        phoneNumbers.put(Constants.BOB_NUMBER, Constants.BOB);
+        phoneNumbers.put(Constants.CHARLIE_NUMBER, Constants.CHARLIE);
         
         timestamps = new HashMap<Integer,Long>();
         
-        timestamps.put(ALICE_NUMBER, (long) 0);
-        timestamps.put(BOB_NUMBER, (long) 0);
-        timestamps.put(CHARLIE_NUMBER, (long) 0);
+        timestamps.put(Constants.ALICE_NUMBER, (long) -1);
+        timestamps.put(Constants.BOB_NUMBER, (long) -1);
+        timestamps.put(Constants.CHARLIE_NUMBER, (long) -1);
         
+        System.out.println("Current clients balances: ");
+        System.out.println("Alice : " + accounts.get(Constants.ALICE_NUMBER));
+        System.out.println("Bob : " + accounts.get(Constants.BOB_NUMBER));
+        System.out.println("Charlie : " + accounts.get(Constants.CHARLIE_NUMBER));
+
+    }
+    
+    public BankServer() throws UnrecoverableKeyException, KeyStoreException, CertificateException, IOException {
+        
+    	socket = new DatagramSocket(6666);
+        
+        PrivateKey privateKey = CryptoUtil.getPrivateKeyFromKeyStoreResource(Constants.KEYSTORE, Constants.PASSWORD.toCharArray(), 
+        							Constants.ALIAS, Constants.PASSWORD.toCharArray());
+        
+        Certificate certificate = CryptoUtil.getX509CertificateFromResource(Constants.SERVER_FOLDER + Constants.SERVER_CERTIFICATE);
+        
+        initExistentClientsData(privateKey, certificate);
         
     }
     
@@ -96,10 +94,42 @@ public class BankServer extends Thread{
     }
     
     public boolean transfer(int sender, int receiver, double amount) {
-		return false;
-    	
+		String senderName = phoneNumbers.get(sender);
+		String receiverName = phoneNumbers.get(receiver);
+		double senderBalance = accounts.get(sender);
+		double receiverBalance = accounts.get(receiver);
+		System.out.println(senderName + " balance : " + senderBalance);
+		System.out.println(receiverName + " balance : " + receiverBalance);
+		System.out.println(senderName + " sends " + amount + " to " + receiverName);
+		senderBalance-=amount;
+		receiverBalance+=amount;
+		accounts.put(sender, senderBalance);
+		accounts.put(receiver, receiverBalance);
+		System.out.println(senderName + " balance : " + senderBalance);
+		System.out.println(receiverName + " balance : " + receiverBalance);
+		System.out.println("Success...");
+		return true;
     }
-    
+    public byte[] processPayment(String[] fields, byte[] sendData, int number) {
+		int receiver = Integer.parseInt(fields[1]);
+		double amount = Double.parseDouble(fields[2]);
+		int timestamp = Integer.parseInt(fields[3]);
+		if((timestamp - timestamps.get(number)) == 1) {
+			if(transfer(number,receiver , amount)) {
+				String content = "Success! Your current balance: " + accounts.get(number);
+				sendData = cm.makeCipheredMessage(content, clients.get(number));
+			}
+			else {
+				String content = Constants.GENERIC_ABORTED;
+				sendData = cm.makeCipheredMessage(content, clients.get(number));
+			}
+		}
+		else {
+			String content = Constants.GENERIC_ABORTED;
+			sendData = cm.makeCipheredMessage(content, clients.get(number));
+		}	
+		return sendData;
+    }
     
     public void run() {
         running = true;
@@ -110,42 +140,27 @@ public class BankServer extends Thread{
             	System.out.println("Receiving packet...");
 				socket.receive(packet);
 				byte[] messageInBytes = Arrays.copyOfRange(packet.getData(), 0, packet.getLength());
-				
+				System.out.println("Received Message!");
 				byte[] numberReceived = Arrays.copyOfRange(messageInBytes, 0, 9);
 				byte[] cipheredMessage = Arrays.copyOfRange(messageInBytes, 9, messageInBytes.length);
 				String numberReceivedString = new String(numberReceived);
 				int number = Integer.parseInt(numberReceivedString);
+				String cipheredString = new String(cipheredMessage);
+				System.out.println("ciphered message: " + cipheredString);
+				System.out.println("Deciphering...");
 				byte[] decipheredMessage = cm.decipherCipheredMessage(cipheredMessage, clients.get(number));
 				String received = new String(decipheredMessage);
+				System.out.println("Deciphered message: " + received);
 				String[] fields = received.split(" ");
-	            String cmd = fields[0];
+	            String command = fields[0];
 	            byte[] sendData = new byte[0];
 				
 	            System.out.println(received);
 	            
-				switch(cmd) {
-				
-				case "pay":
-					int receiver = Integer.parseInt(fields[1]);
-					double amount = Double.parseDouble(fields[2]);
-					int timestamp = Integer.parseInt(fields[3]);
-					if((timestamp - timestamps.get(number)) == 1) {
-						if(transfer(number,receiver , amount)) {
-							String content = "Successfull";
-							sendData = cm.makeCipheredMessage(content, clients.get(number));
-						}
-						else {
-							String content = "Aborted";
-							sendData = cm.makeCipheredMessage(content, clients.get(number));
-						}
-					}
-					else {
-						String content = "Aborted";
-						sendData = cm.makeCipheredMessage(content, clients.get(number));
-					}	
-					
-					
-						
+				switch(command) {
+					case Constants.PAY_OPERATION:
+						System.out.println("Process Payment");
+						sendData = processPayment(fields, sendData, number);		
 					break;
 				case "charge":
 					break;
@@ -156,6 +171,7 @@ public class BankServer extends Thread{
 				
 				InetAddress IPAddress = packet.getAddress();
                 int port = packet.getPort();
+                
                 DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
 	            socket.send(sendPacket);
 	            
