@@ -89,8 +89,19 @@ public class BankServer extends Thread{
         
     }
     
-    public void checkBalance(int number) {
-    	// BALANCE CHECKING PROCESS
+    public byte[] checkBalance(String[] fields, byte[] sendData, int number) {
+		int receiver = Integer.parseInt(fields[1]);
+		int timestamp = Integer.parseInt(fields[2]);
+		double receiverBalance = accounts.get(receiver);
+		if((timestamp - timestamps.get(number)) == 1) {
+			String content = "Your Balance is: " + receiverBalance;
+			System.out.println(content);
+			sendData = cm.makeCipheredMessage(content, clients.get(number));
+		} else {
+			String content = Constants.GENERIC_ABORTED;
+			sendData = cm.makeCipheredMessage(content, clients.get(number));
+		}	
+		return sendData;
     }
     
     public boolean transfer(int sender, int receiver, double amount) {
@@ -164,8 +175,8 @@ public class BankServer extends Thread{
 					break;
 				case "charge":
 					break;
-				case "check":
-	            	checkBalance(Integer.valueOf(number));
+				case Constants.CHECK_BALANCE_OPERATION:
+	            	sendData = checkBalance(fields, sendData, number);
 					break;
 				}
 				

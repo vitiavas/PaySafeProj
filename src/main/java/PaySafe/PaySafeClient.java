@@ -47,7 +47,14 @@ public class PaySafeClient {
     }
  
     public String sendMessageUDP(int receiverNumber, double amount, String operation) throws IOException, CertificateException, NoSuchProviderException {
-    	String msg = operation + " " + receiverNumber + " " + amount + " ";
+    	String msg = null;
+    	// CHECK BALANCE
+    	if(amount == -1) {
+        	msg = operation + " " + receiverNumber + " ";
+    	// PAYMENT
+    	} else {
+        	msg = operation + " " + receiverNumber + " " + amount + " ";    		
+    	}
     	if(operation.equals(Constants.PAY_OPERATION) || operation.equals(Constants.CHECK_BALANCE_OPERATION)) {
     		writeTimestamp++;
     		msg += writeTimestamp;
@@ -66,6 +73,7 @@ public class PaySafeClient {
         socket.receive(packet);
 		System.out.println("Received response!");
 		String received = new String(buf);
+		System.out.println(received);
         return received;
     }
  

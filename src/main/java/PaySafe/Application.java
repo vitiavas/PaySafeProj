@@ -64,23 +64,27 @@ public class Application {
 		System.out.println("----------------------------------------------------------------------------------------");
 		
 		Scanner reader = new Scanner(System.in);
-		System.out.println("Select a number to init: ");
-		System.out.println("1 -- Alice");
-		System.out.println("2 -- Bob");
-		System.out.println("3 -- Charlie");
-		String userNumber = reader.nextLine();
-		
+		String userNumber = null;
+		int myNumber = 0;
 		int init =0;
 		while(init ==0) {
+			System.out.println("Select a number to init: ");
+			System.out.println("1 -- Alice");
+			System.out.println("2 -- Bob");
+			System.out.println("3 -- Charlie");
+			userNumber = reader.nextLine();
 			switch (userNumber.trim()) {
 	        case "1":  client=new PaySafeClient(Constants.ALICE);
+	        		 myNumber = Constants.ALICE_NUMBER;
 	        		 init=1;
 	                 break;
 	        case "2":  client=new PaySafeClient(Constants.BOB);
 	        		 init=1;
+	        		 myNumber = Constants.BOB_NUMBER;
 	        		 break;
 	        case "3":  client=new PaySafeClient(Constants.CHARLIE);
 	        		 init=1;
+	        		 myNumber = Constants.CHARLIE_NUMBER;
 	        		 break;
 	        default: System.out.println("\nThe '"+userNumber+ "' is not a valid number!");
 	        		continue;
@@ -102,22 +106,31 @@ public class Application {
 				System.out.println("Introduce amount to send: ");
 				double amount = reader.nextDouble(); 				
 				client.sendMessageUDP(telefoneNumber, amount, Constants.PAY_OPERATION);
-
 			} else if(n == 2) {
-//				System.out.println("Introduce your number: ");
-//				int myNumber = reader.nextInt();
-//				String message = "Check Balance " + Integer.toString(myNumber);
-//				// CONVERT TO A MESSAGE HERE AND DO ALL THE ENCRYPTION PROCESS
-//				client.sendMessageUDP(message,"check");
-	
+				client.sendMessageUDP(myNumber, -1, Constants.CHECK_BALANCE_OPERATION);
 			} else if(n == 3) {
 				
 			}
-			else if(n==4)
-				break;
-			
+			else if(n==4) {
+			    System.exit(0);
+			}
+				 
+			System.out.println("Do you wish to continue?");
+			System.out.println("1 -- Yes");
+			System.out.println("2 -- No");
+			n = reader.nextInt(); 
+			while(n != 1 && n != 2) {
+				System.out.println("Do you wish to continue?");
+				System.out.println("1 -- Yes");
+				System.out.println("2 -- No");
+				n = reader.nextInt(); 
+
+			}
+			if(n == 1) {
+				continue;
+			} else if(n == 2) {
+				System.exit(0);
+			}
 		}
-		reader.close();
-        
 	}
 }
