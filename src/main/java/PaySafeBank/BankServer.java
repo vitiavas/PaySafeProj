@@ -32,7 +32,7 @@ import Crypto.CryptoUtil;
 public class BankServer extends Thread{
     private DatagramSocket socket;
     private boolean running;
-    private byte[] buf = new byte[120];
+    private byte[] buf = new byte[140];
     private CryptoManager cm;
     
     private static final String KEYSTORE = "server/server.jks";
@@ -121,6 +121,8 @@ public class BankServer extends Thread{
 	            String cmd = fields[0];
 	            byte[] sendData = new byte[0];
 				
+	            System.out.println(received);
+	            
 				switch(cmd) {
 				
 				case "pay":

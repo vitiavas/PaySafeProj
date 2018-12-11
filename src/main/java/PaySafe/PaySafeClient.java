@@ -24,7 +24,8 @@ public class PaySafeClient {
     private static final String SERVER_NUMBER = "964089137";
     private static final String CHARLIE_NUMBER = "913330533";
     private static final String BOB_NUMBER = "964512431";
-    private static final String CER = "server/";
+    private static final String CER = "clients/";
+    private Certificate serverCer;
     private DatagramSocket socket;
     private InetAddress address;
     private long readID =0;
@@ -32,7 +33,7 @@ public class PaySafeClient {
     private String name;
     private CryptoManager cm;
     private BankServer bankServer;
-    private byte[] buf;
+    private byte[] buf = new byte[140];
  
     public PaySafeClient(String name) throws UnrecoverableKeyException, KeyStoreException, CertificateException, IOException {
     	
@@ -46,22 +47,11 @@ public class PaySafeClient {
     		cm = new CryptoManager(c.getPublicKey(), privateKey,CHARLIE_NUMBER);
         socket = new DatagramSocket();
         address = InetAddress.getByName("localhost");
+        serverCer = CryptoUtil.getX509CertificateFromResource(CER+ "server.cer");
     }
  
-    private PublicKey getReceiverPublicKey(int receiverNumber) throws CertificateException, IOException {
-    	String name = null;
-    	if(receiverNumber == 964512431) {
-    		name = "bob";
-    	} else if(receiverNumber == 913330533) {
-    		name = "charlie";
-    	} else if(receiverNumber == 910984085) {
-    		name = "alice";
-    	}
-    	Certificate c = CryptoUtil.getX509CertificateFromResource(CER+ name + ".cer");
-    	return c.getPublicKey();
-    }
     public String sendMessageUDP(int receiverNumber, double amount, String r) throws IOException, CertificateException {
-    	String msg = receiverNumber + " " + amount;
+    	String msg = r + " " +receiverNumber + " " + amount + " ";
     	if(r.equals("pay") || r.equals("check")) {
     		writeTimestamp++;
     		msg += writeTimestamp;
@@ -71,8 +61,8 @@ public class PaySafeClient {
     		msg += readID;
     	}
 
-    	PublicKey receiverPubKey = getReceiverPublicKey(receiverNumber);
-        byte[] buf = cm.makeCipheredMessage(msg, receiverPubKey);
+    	
+        byte[] buf = cm.makeCipheredMessage(msg, serverCer.getPublicKey());
         DatagramPacket packet = new DatagramPacket(buf, buf.length, address, 6666);
         socket.send(packet);
         
