@@ -26,7 +26,6 @@ public class PaySafeClient {
     private Certificate serverCer;
     private DatagramSocket socket;
     private InetAddress address;
-    private long readID =0;
     private long writeTimestamp = -1;
     private CryptoManager cm;
  
@@ -45,6 +44,14 @@ public class PaySafeClient {
         address = InetAddress.getByName(Constants.LOCALHOST);
         serverCer = CryptoUtil.getX509CertificateFromResource(Constants.CLIENTS_FOLDER + Constants.SERVER_CERTIFICATE);
     }
+    
+    public byte[] cipherAMessage(String s) {
+    	return cm.makeCipheredMessage(s, serverCer.getPublicKey());
+    }
+    
+    public byte[] decipherAMessage(byte[] b) throws NoSuchProviderException {
+    	return cm.decipherCipheredMessage(b, serverCer.getPublicKey());
+    }
  
     public String sendMessageUDP(int receiverNumber, double amount, String operation) throws IOException, CertificateException, NoSuchProviderException {
     	String msg = null;
@@ -55,14 +62,9 @@ public class PaySafeClient {
     	} else {
         	msg = operation + " " + receiverNumber + " " + amount + " ";    		
     	}
-    	if(operation.equals(Constants.PAY_OPERATION)) {
-    		writeTimestamp++;
-    		msg += writeTimestamp;
-		}
-    	else {
-    		readID++;
-    		msg += readID;
-    	}
+		writeTimestamp++;
+		msg += writeTimestamp;
+
     	System.out.println("ecnrypting message: " + msg);
     	
         byte[] buf = cm.makeCipheredMessage(msg, serverCer.getPublicKey());

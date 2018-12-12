@@ -56,6 +56,7 @@ public class app {
 		CryptoManager mn = new CryptoManager();
 		byte[] b = toBytes(m);
 		System.out.println("WWWW   " + b.length+Thread.currentThread().getContextClassLoader().getResourceAsStream("keys.jks"));
+		
 		String s = "123456";
 		String s2 = "server/server.jks";
 		String s3 = "server";
@@ -63,7 +64,7 @@ public class app {
 		
 		PrivateKey k = CryptoUtil.getPrivateKeyFromKeyStoreResource(s2, s.toCharArray(), "server", s.toCharArray());
 		if(k==null)
-			System.out.println("shiiit");
+			System.out.println("null priv key");
 		byte[] sig = CryptoUtil.makeDigitalSignature(b, k);
 		System.out.println("WWWW   " + sig.length);
 		Certificate c = CryptoUtil.getX509CertificateFromResource("clients/server.cer");

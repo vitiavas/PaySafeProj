@@ -94,9 +94,10 @@ public class BankServer extends Thread{
     
     public byte[] checkBalance(String[] fields, byte[] sendData, int number) {
 		int receiver = Integer.parseInt(fields[1]);
-		int timestamp = Integer.parseInt(fields[2]);
+		Long timestamp = (long) Integer.parseInt(fields[2]);
 		double receiverBalance = accounts.get(receiver);
-		if(timestamp >= 0) {
+		if((timestamp - timestamps.get(number)) == 1) {
+			timestamps.replace(number, timestamp);
 			String content = "Your Balance is: " + receiverBalance;
 			System.out.println(content);
 			sendData = cm.makeCipheredMessage(content, clients.get(number));
@@ -127,8 +128,9 @@ public class BankServer extends Thread{
     public byte[] processPayment(String[] fields, byte[] sendData, int number) {
 		int receiver = Integer.parseInt(fields[1]);
 		double amount = Double.parseDouble(fields[2]);
-		int timestamp = Integer.parseInt(fields[3]);
+		Long timestamp = (long) Integer.parseInt(fields[3]);
 		if((timestamp - timestamps.get(number)) == 1) {
+			timestamps.replace(number, timestamp);
 			if(transfer(number,receiver , amount)) {
 				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 				Date date = new Date();
