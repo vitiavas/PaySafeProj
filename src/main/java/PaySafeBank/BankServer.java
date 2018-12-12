@@ -11,6 +11,9 @@ import java.security.PublicKey;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 
 import org.bouncycastle.util.Arrays;
@@ -93,7 +96,7 @@ public class BankServer extends Thread{
 		int receiver = Integer.parseInt(fields[1]);
 		int timestamp = Integer.parseInt(fields[2]);
 		double receiverBalance = accounts.get(receiver);
-		if((timestamp - timestamps.get(number)) == 1) {
+		if(timestamp >= 0) {
 			String content = "Your Balance is: " + receiverBalance;
 			System.out.println(content);
 			sendData = cm.makeCipheredMessage(content, clients.get(number));
@@ -127,7 +130,9 @@ public class BankServer extends Thread{
 		int timestamp = Integer.parseInt(fields[3]);
 		if((timestamp - timestamps.get(number)) == 1) {
 			if(transfer(number,receiver , amount)) {
-				String content = "Success! Your current balance: " + accounts.get(number);
+				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+				Date date = new Date();
+				String content = "Success! " + dateFormat.format(date);
 				sendData = cm.makeCipheredMessage(content, clients.get(number));
 			}
 			else {
@@ -152,21 +157,23 @@ public class BankServer extends Thread{
 				socket.receive(packet);
 				byte[] messageInBytes = Arrays.copyOfRange(packet.getData(), 0, packet.getLength());
 				System.out.println("Received Message!");
+				
 				byte[] numberReceived = Arrays.copyOfRange(messageInBytes, 0, 9);
 				byte[] cipheredMessage = Arrays.copyOfRange(messageInBytes, 9, messageInBytes.length);
+				
 				String numberReceivedString = new String(numberReceived);
 				int number = Integer.parseInt(numberReceivedString);
-				String cipheredString = new String(cipheredMessage);
-				System.out.println("ciphered message: " + cipheredString);
+				
 				System.out.println("Deciphering...");
 				byte[] decipheredMessage = cm.decipherCipheredMessage(cipheredMessage, clients.get(number));
+				
 				String received = new String(decipheredMessage);
 				System.out.println("Deciphered message: " + received);
+				
+				
 				String[] fields = received.split(" ");
 	            String command = fields[0];
 	            byte[] sendData = new byte[0];
-				
-	            System.out.println(received);
 	            
 				switch(command) {
 					case Constants.PAY_OPERATION:
@@ -182,6 +189,7 @@ public class BankServer extends Thread{
 				
 				InetAddress IPAddress = packet.getAddress();
                 int port = packet.getPort();
+                
                 
                 DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
 	            socket.send(sendPacket);

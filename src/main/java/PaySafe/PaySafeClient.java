@@ -55,7 +55,7 @@ public class PaySafeClient {
     	} else {
         	msg = operation + " " + receiverNumber + " " + amount + " ";    		
     	}
-    	if(operation.equals(Constants.PAY_OPERATION) || operation.equals(Constants.CHECK_BALANCE_OPERATION)) {
+    	if(operation.equals(Constants.PAY_OPERATION)) {
     		writeTimestamp++;
     		msg += writeTimestamp;
 		}
@@ -72,8 +72,14 @@ public class PaySafeClient {
         packet = new DatagramPacket(buf, buf.length);
         socket.receive(packet);
 		System.out.println("Received response!");
-		String received = new String(buf);
-		System.out.println(received);
+		
+		byte[] messageInBytes = Arrays.copyOfRange(packet.getData(), 0, packet.getLength());
+		
+		byte[] numberReceived = Arrays.copyOfRange(messageInBytes, 0, 9);
+		byte[] cipheredMessage = Arrays.copyOfRange(messageInBytes, 9, messageInBytes.length);
+		byte[] decipheredMessage = cm.decipherCipheredMessage(cipheredMessage, serverCer.getPublicKey());
+		
+		String received = new String(decipheredMessage);
         return received;
     }
  

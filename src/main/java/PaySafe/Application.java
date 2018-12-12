@@ -90,46 +90,29 @@ public class Application {
 	        		continue;
 			}
 		}
-		
 		while(true) {
-			
-			System.out.println("Choose pretended operation: ");
-			System.out.println("1 -- Perform payment");
-			System.out.println("2 -- Check balance");
-			System.out.println("3 -- Deposit");
-			System.out.println("4 -- Exit");
-	 
-			System.out.println("Enter a number: ");
-			int n = reader.nextInt(); 
-			if(n == 1) {
-				telefoneNumber = chooseTelefoneNumber(userNumber, reader);
-				System.out.println("Introduce amount to send: ");
-				double amount = reader.nextDouble(); 				
-				client.sendMessageUDP(telefoneNumber, amount, Constants.PAY_OPERATION);
-			} else if(n == 2) {
-				client.sendMessageUDP(myNumber, -1, Constants.CHECK_BALANCE_OPERATION);
-			} else if(n == 3) {
-				
-			}
-			else if(n==4) {
-			    System.exit(0);
-			}
-				 
-			System.out.println("Do you wish to continue?");
-			System.out.println("1 -- Yes");
-			System.out.println("2 -- No");
-			n = reader.nextInt(); 
-			while(n != 1 && n != 2) {
-				System.out.println("Do you wish to continue?");
-				System.out.println("1 -- Yes");
-				System.out.println("2 -- No");
-				n = reader.nextInt(); 
-
-			}
-			if(n == 1) {
-				continue;
-			} else if(n == 2) {
-				System.exit(0);
+			try {
+	
+				System.out.println("Choose pretended operation: ");
+				System.out.println("1 -- Perform payment");
+				System.out.println("2 -- Check balance");
+				System.out.println("3 -- Exit");
+		 
+				System.out.println("Enter a number: ");
+				int n = Integer.parseInt(reader.nextLine()); 
+				if(n == 1) {
+					telefoneNumber = chooseTelefoneNumber(userNumber, reader);
+					System.out.println("Introduce amount to send: ");
+					double amount = reader.nextDouble(); 				
+					System.out.println(client.sendMessageUDP(telefoneNumber, amount, Constants.PAY_OPERATION));
+				} else if(n == 2) {
+					System.out.println(client.sendMessageUDP(myNumber, -1, Constants.CHECK_BALANCE_OPERATION));
+				} else if(n == 3) {
+				    System.exit(0);
+				}
+					 	
+			}catch(Exception e) {
+				System.out.println("Bad Input! Enter again");
 			}
 		}
 	}
